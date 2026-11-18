@@ -1,0 +1,87 @@
+// 宝妈商城核心表（最小闭环）
+// shop / invite_code / product_pool / product+sku / order / order_split / ai_job / decoration_order / ledger
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "mysql" url = env("DATABASE_URL") }
+
+model Shop {
+  id        String   @id @default(cuid())
+  ownerOpenid String @unique
+  name      String
+  status    String   @default("pending") // pending | active | suspended
+  createdAt DateTime @default(now())
+  products  Product[]
+  orders    Order[]
+}
+
+model InviteCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  status    String   @default("unused") // unused | used | disabled
+  inviter   String?
+  usedBy    String?
+  createdAt DateTime @default(now())
+  usedAt    DateTime?
+}
+
+model ProductPool {
+  id        String   @id @default(cuid())
+  shopId    String
+  name      String
+  images    String   @default("[]")
+  createdAt DateTime @default(now())
+  products  Product[]
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  shopId    String
+  poolId    String?
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  pool      ProductPool? @relation(fields: [poolId], references: [id])
+  name      String
+  priceCents Int
+  stock     Int      @default(0)
+  status    String   @default("on_sale")
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id         String   @id @default(cuid())
+  shopId     String
+  shop       Shop     @relation(fields: [shopId], references: [id])
+  totalCents Int
+  status     String   @default("unpaid")
+  createdAt  DateTime @default(now())
+  split      OrderSplit?
+}
+
+model OrderSplit {
+  id           String @id @default(cuid())
+  orderId      String @unique
+  order        Order  @relation(fields: [orderId], references: [id])
+  momCents     Int    // 99%
+  wxFeeCents   Int    // 0.6%
+  platformCents Int   // 0.4%
+  status       String @default("pending") // pending | done | refunded
+}
+
+model AiJob {
+  id         String   @id @default(cuid())
+  shopId     String
+  type       String   // image | video
+  model      String
+  costCents  Int      @default(0)
+  priceCents Int      @default(0)
+  status     String   @default("pending")
+  resultUrl  String?
+  createdAt  DateTime @default(now())
+}
+
+model DecorationOrder {
+  id         String   @id @default(cuid())
+  shopId     String
+  service    String
+  priceCents Int
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+}

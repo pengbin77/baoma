@@ -1,0 +1,11 @@
+{
+  "name": "baoma-mall",
+  "private": true,
+  "version": "0.1.0",
+  "description": "宝妈商城：一人一个小店，宝妈自营，交易收1%，微信分账到宝妈零钱，AI按次收费，邀请码入驻。",
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev:server": "npm --prefix apps/server run start:dev",
+    "dev:mp": "npm --prefix apps/miniapp run dev:mp-weixin"
+  }
+}
